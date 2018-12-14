@@ -3,7 +3,8 @@
         "node": true
     },
     "parserOptions": {
-        "ecmaVersion": 2017
+        "ecmaVersion": 2017,
+        "sourceType": "module"
     },
     "rules": {
         "no-alert": 2,
@@ -43,8 +44,8 @@
         "no-labels": 2,
         "no-lone-blocks": 2,
         "no-lonely-if": 2,
-        "no-mixed-spaces-and-tabs": [2, false],
-        "no-multi-spaces": 2,
+        "no-mixed-spaces-and-tabs": [1, false],
+        "no-multi-spaces": 1,
         "no-multi-str": 2,
         "no-multiple-empty-lines": 2,
         "no-native-reassign": 2,
@@ -71,9 +72,9 @@
         "no-spaced-func": 2,
         "no-sparse-arrays": 2,
         "no-throw-literal": 2,
-        "no-trailing-spaces": 2,
+        "no-trailing-spaces": 1,
         "no-undef-init": 2,
-        "no-undef": 2,
+        "no-undef": 1,
         "no-unmodified-loop-condition": 2,
         "no-unreachable": 2,
         "no-unused-expressions": 2,
@@ -86,7 +87,7 @@
         "no-with": 2,
 
         "accessor-pairs": [2, { "setWithoutGet": true }],
-        "array-bracket-spacing": [2, "never"],
+        "array-bracket-spacing": [1, "never"],
         "array-callback-return": 1,
         "brace-style": [2, "1tbs"],
         "camelcase": 2,
@@ -102,7 +103,7 @@
         "eqeqeq": 2,
         "indent": [2, 4, { "SwitchCase": 1 }],
         "key-spacing": [2, { "beforeColon": false, "afterColon": true }],
-        "keyword-spacing": 2,
+        "keyword-spacing": 1,
         "max-nested-callbacks": [1, 2],
         "max-params": [2, 4],
         "new-cap": 2,
@@ -117,7 +118,7 @@
         "space-before-blocks": [2, "always"],
         "space-before-function-paren": [2, "never"],
         "space-in-parens": [2, "never"],
-        "space-infix-ops": 2,
+        "space-infix-ops": 1,
         "space-unary-ops": [2, { "words": true, "nonwords": false }],
         "spaced-comment": [2, "always", { "exceptions": ["/"] }],
         "strict": [2, "function"],
@@ -145,7 +146,7 @@
         "no-restricted-syntax": [2, "YieldExpression"],
         "no-this-before-super": 2,
         "no-useless-constructor": 2,
-        "no-var": 2,
+        "no-var": 1,
 
         "arrow-body-style": [2, "as-needed"],
         "arrow-parens": 2,

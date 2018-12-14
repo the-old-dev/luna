@@ -26,6 +26,7 @@ function showUsage(message) {
     console.log('-i, --inject         JavaScript file(s) to inject into the page');
     console.log('-h, --help           Show usage');
     console.log('-v, --verbose        Show verbose output when tests run');
+    console.log('-r, --root           root paths, for es6 import statements'); // patched by the-old-dev : feature-es6-root-import
     console.log('--version            Show version');
 
     if (message) {
@@ -44,6 +45,7 @@ const argv = yargs
     .alias('p', 'port')
     .alias('t', 'timeout')
     .alias('i', 'inject')
+    .alias('r', 'root').array('root') // patched by the-old-dev : feature-es6-root-import
     .help('').argv;
 
 if (argv.help) {
@@ -82,6 +84,7 @@ const options = {
     coverage: !argv.noCoverage,
     concurrency: argv.concurrency || 1,
     port: argv.port || 5862,
+    root: argv.root, // patched by the-old-dev : feature-es6-root-import
     verbose: argv.verbose,
     node: argv.node,
     inject: argv.inject,

@@ -14,6 +14,11 @@ const puppeteer = require('puppeteer');
 const walk = require('walk');
 const istanbul = require('istanbul-lib-coverage');
 const createReporter = require('istanbul-api').createReporter;
+//patched by the-old-dev : feature-response-fakes
+const RequestInterceptor = require('puppeteer-request-spy').RequestInterceptor;
+const ResponseFaker      = require('puppeteer-request-spy').ResponseFaker;
+const minimatch          = require('minimatch');
+const path = require('path');
 
 let bar;
 let sourceMapError = null;
@@ -176,12 +181,31 @@ async function formatLog(msg) {
 }
 
 async function runTestBrowser(browser, testPath, options) {
+	
+	// patched by the-old-dev : feature-response-fakes
+	var responseFakesPath =  path.join(process.cwd(), testPath+"-response-fakes.js").replace(/\\/g, '\\\\');
+	var requestInterceptor = null;
+	if (fs.existsSync(responseFakesPath)) {
+		requestInterceptor = new RequestInterceptor(minimatch, console);
+		var responseFakes = require(responseFakesPath).fakes;
+		for (var i in responseFakes) {
+			var fake = responseFakes[i];
+			requestInterceptor.addFaker(new ResponseFaker(fake.requestPattern, fake.response));
+		}
+	}
+	
     return new Promise(async(resolve, reject) => {
         try {
             const page = await browser.newPage();
 
             if (options.coverage) {
                 await page.coverage.startJSCoverage();
+            }
+            
+            // patched by the-old-dev : feature-response-fakes
+            if (requestInterceptor != null) {
+                page.setRequestInterception(true);
+                page.on('request', requestInterceptor.intercept.bind(requestInterceptor));
             }
 
             const url = `http://localhost:${options.port}/run/${testPath}`;

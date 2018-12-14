@@ -8,8 +8,14 @@ You can read the [introduction blog post](https://medium.com/@craigiam/introduci
 
 ---
 
+* **This is a fork with additional features**
+
+---
 <!-- MarkdownTOC autolink="true" -->
 
+- [Additional features of this fork](#additional-features-of-this-fork)
+    - [Root directories for es6 module imports](#root-directories-for-es6-module-imports)
+    - [Response fakes for backend independent testing](#response-fakes-for-backend-independent-testing)
 - [Getting Started](#getting-started)
     - [Naming tests](#naming-tests)
     - [Specifying multiple test paths](#specifying-multiple-test-paths)
@@ -32,6 +38,72 @@ You can read the [introduction blog post](https://medium.com/@craigiam/introduci
 - [Testing Luna](#testing-luna)
 
 <!-- /MarkdownTOC -->
+
+## Additional features of this fork
+
+There have been two major motivations for forking and patching the Luna library:
+
+* Provide something like a consistent package naming for es6 module imports in the browser
+* Reduce the need for additional libraries during testing 
+
+### Root directories for es6 module imports
+
+This features allows to specify the es6 imports in a consistent way, in the browser environment. 
+No matter where the importing module is.
+
+e.g. if there is a es6 module 
+
+* "[root]/modules/module-a.js"
+
+it can import the file 
+
+* "module-b.js" at the same directory 
+
+with 
+
+* "/modules/module-b.js"
+
+**This feature is realized by:**
+
+* Using [rollup-plugin-root-import](https://github.com/mixmaxhq/rollup-plugin-root-import)
+* Patches in server.js, luna.js (look for "// patched by the-old-dev : feature-es6-root-import")
+* Tests are in "test_fork_features"
+
+### Response fakes for backend independent testing
+
+This features allows to create a response fake module file for every luny test.
+
+1. Create a luna test. e.g. "test-url.js"
+1. Create a corresponding response fake file "test-url.js-response-fakes.js" with the following properties:
+
+
+* It has to be a node module
+* It has to export a variable "fakes", which has to be an array of response fake objects
+* A response fake object contains a requestPattern and a response
+* The response has to correspond to the official [Puppeteer Response Object](https://github.com/GoogleChrome/puppeteer/blob/master/docs/api.md#requestrespondresponse)
+
+Here is an example for a response fake file:
+
+    ```
+    test-url.js-response-fakes.js
+    
+    // Return the fakes in an array
+	 var myFakes = [ {
+	 requestPattern : '**/fake/response.txt',
+	 response : {
+			status : 200,
+			contentType : 'text/plain',
+			body : 'Hello World'
+		}
+	} ];
+	exports.fakes = myFakes;
+   	```
+
+**This feature is realized by:**
+
+* Using [puppeteer-request-spy](https://github.com/Tabueeee/puppeteer-request-spy)
+* Patches in runner.js (look for "// patched by the-old-dev : feature-response-fakes")
+* Tests are in "test_fork_features"
 
 ## Getting Started
 

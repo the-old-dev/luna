@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-/* Luna v1.1.1 */
 'use strict';
 
 function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
@@ -274,13 +273,21 @@ const rollup = require('rollup');
 const buble = require('rollup-plugin-buble');
 const replace = require('rollup-plugin-replace');
 const coverage = require('rollup-plugin-istanbul');
+const rootImport = require('rollup-plugin-root-import'); // patched by the-old-dev : feature-es6-root-import
 
 let runOptions;
 
 async function getBundle(filePath, options) {
     return new Promise(async(resolve, reject) => {
         try {
-            // This is somewhat confusing, but on Windows since this is a
+
+        	// patched by the-old-dev : feature-es6-root-import
+        	var roots = [];   
+        	for(var aRoot in  options.root) {
+        		roots.push(path.join(process.cwd(), options.root[aRoot]).replace(/\\/g, '\\\\'));
+        	} 
+        	
+        	// This is somewhat confusing, but on Windows since this is a
             // straight string replacement any path that has \test\something in
             // it will end up rendering the \t as a tab characters. We have to
             // make sure that any \ are replaced with \\
@@ -289,8 +296,13 @@ async function getBundle(filePath, options) {
                 replace({
                     TEST_FILE_PATH: fullTestPath,
                     TEST_TIMEOUT: options.timeout
-                }),
-                buble({
+                }), // patched by the-old-dev : feature-es6-root-import
+                rootImport({
+                	root: roots,
+                    useEntry: 'prepend',
+                    extensions: [ '.js', 'mjs' ]
+        		}),
+        		buble({
                     target: {
                         chrome: 63
                     },
@@ -766,6 +778,11 @@ const puppeteer = require('puppeteer');
 const walk = require('walk');
 const istanbul = require('istanbul-lib-coverage');
 const createReporter = require('istanbul-api').createReporter;
+//patched by the-old-dev : feature-response-fakes
+const RequestInterceptor = require('puppeteer-request-spy').RequestInterceptor;
+const ResponseFaker      = require('puppeteer-request-spy').ResponseFaker;
+const minimatch          = require('minimatch');
+const path$1 = require('path');
 
 let bar;
 let sourceMapError = null;
@@ -928,12 +945,31 @@ async function formatLog(msg) {
 }
 
 async function runTestBrowser(browser, testPath, options) {
+	
+	// patched by the-old-dev : feature-response-fakes
+	var responseFakesPath =  path$1.join(process.cwd(), testPath+"-response-fakes.js").replace(/\\/g, '\\\\');
+	var requestInterceptor = null;
+	if (fs$1.existsSync(responseFakesPath)) {
+		requestInterceptor = new RequestInterceptor(minimatch, console);
+		var responseFakes = require(responseFakesPath).fakes;
+		for (var i in responseFakes) {
+			var fake = responseFakes[i];
+			requestInterceptor.addFaker(new ResponseFaker(fake.requestPattern, fake.response));
+		}
+	}
+	
     return new Promise(async(resolve, reject) => {
         try {
             const page = await browser.newPage();
 
             if (options.coverage) {
                 await page.coverage.startJSCoverage();
+            }
+            
+            // patched by the-old-dev : feature-response-fakes
+            if (requestInterceptor != null) {
+                page.setRequestInterception(true);
+                page.on('request', requestInterceptor.intercept.bind(requestInterceptor));
             }
 
             const url = `http://localhost:${options.port}/run/${testPath}`;
@@ -1286,7 +1322,7 @@ async function runTests(options) {
 const fs$2 = require('fs');
 const yargs = require('yargs');
 const os = require('os');
-const path$1 = require('path');
+const path$2 = require('path');
 const version = require('./../package.json').version;
 const ci = require('ci-info');
 
@@ -1308,6 +1344,7 @@ function showUsage(message) {
     console.log('-i, --inject         JavaScript file(s) to inject into the page');
     console.log('-h, --help           Show usage');
     console.log('-v, --verbose        Show verbose output when tests run');
+    console.log('-r, --root           root paths, for es6 import statements'); // patched by the-old-dev : feature-es6-root-import
     console.log('--version            Show version');
 
     if (message) {
@@ -1326,6 +1363,7 @@ const argv = yargs
     .alias('p', 'port')
     .alias('t', 'timeout')
     .alias('i', 'inject')
+    .alias('r', 'root').array('root') // patched by the-old-dev : feature-es6-root-import
     .help('').argv;
 
 if (argv.help) {
@@ -1364,6 +1402,7 @@ const options = {
     coverage: !argv.noCoverage,
     concurrency: argv.concurrency || 1,
     port: argv.port || 5862,
+    root: argv.root, // patched by the-old-dev : feature-es6-root-import
     verbose: argv.verbose,
     node: argv.node,
     inject: argv.inject,
@@ -1387,7 +1426,7 @@ if (ci.isCI) {
             let fileName;
             const hasCoverage = options.coverage;
             if (hasCoverage) {
-                fileName = path$1.join(os.tmpdir(), `coverage-${process.pid}.json`);
+                fileName = path$2.join(os.tmpdir(), `coverage-${process.pid}.json`);
                 console.log(PREFIX.coverage, fileName);
             }
 

@@ -5,6 +5,8 @@ const rollup = require('rollup');
 const buble = require('rollup-plugin-buble');
 const replace = require('rollup-plugin-replace');
 const coverage = require('rollup-plugin-istanbul');
+const rootImport = require('rollup-plugin-root-import'); // patched by the-old-dev : feature-es6-root-import
+
 import assert from './rollup-assert';
 import chalk from 'chalk';
 
@@ -13,7 +15,14 @@ let runOptions;
 export async function getBundle(filePath, options) {
     return new Promise(async(resolve, reject) => {
         try {
-            // This is somewhat confusing, but on Windows since this is a
+
+        	// patched by the-old-dev : feature-es6-root-import
+        	var roots = [];   
+        	for(var aRoot in  options.root) {
+        		roots.push(path.join(process.cwd(), options.root[aRoot]).replace(/\\/g, '\\\\'));
+        	} 
+        	
+        	// This is somewhat confusing, but on Windows since this is a
             // straight string replacement any path that has \test\something in
             // it will end up rendering the \t as a tab characters. We have to
             // make sure that any \ are replaced with \\
@@ -22,8 +31,13 @@ export async function getBundle(filePath, options) {
                 replace({
                     TEST_FILE_PATH: fullTestPath,
                     TEST_TIMEOUT: options.timeout
-                }),
-                buble({
+                }), // patched by the-old-dev : feature-es6-root-import
+                rootImport({
+                	root: roots,
+                    useEntry: 'prepend',
+                    extensions: [ '.js', 'mjs' ]
+        		}),
+        		buble({
                     target: {
                         chrome: 63
                     },
