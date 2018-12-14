@@ -51,23 +51,22 @@ There have been two major motivations for forking and patching the Luna library:
 This features allows to specify the es6 imports in a consistent way, in the browser environment. 
 No matter where the importing module is.
 
-e.g. if there is a es6 module 
+e.g. 
 
-* "[root]/modules/module-a.js"
+	[root]/modules/module-a.js 		(can import "/modules/module-b.js") 
+	[root]/modules/module-b.js		
 
-it can import the file 
+For usage, look at [test_fork_features](https://github.com/the-old-dev/luna/tree/master/test_fork_features)
 
-* "module-b.js" at the same directory 
+The import root is set via the command line -r (-root) argument. An example is here:
 
-with 
-
-* "/modules/module-b.js"
+	npx ./bin/luna.js test_fork_features -r test_fork_features
 
 **This feature is realized by:**
 
 * Using [rollup-plugin-root-import](https://github.com/mixmaxhq/rollup-plugin-root-import)
 * Patches in server.js, luna.js (look for "// patched by the-old-dev : feature-es6-root-import")
-* Tests are in "test_fork_features"
+* Tests are in [test_fork_features](https://github.com/the-old-dev/luna/tree/master/test_fork_features)
 
 ### Response fakes for backend independent testing
 
@@ -84,7 +83,6 @@ This features allows to create a response fake module file for every luny test.
 
 Here is an example for a response fake file:
 
-    ```
     test-url.js-response-fakes.js
     
     // Return the fakes in an array
@@ -97,13 +95,14 @@ Here is an example for a response fake file:
 		}
 	} ];
 	exports.fakes = myFakes;
-   	```
+   	
+For usage, look at [test_fork_features](https://github.com/the-old-dev/luna/tree/master/test_fork_features)
 
 **This feature is realized by:**
 
 * Using [puppeteer-request-spy](https://github.com/Tabueeee/puppeteer-request-spy)
 * Patches in runner.js (look for "// patched by the-old-dev : feature-response-fakes")
-* Tests are in "test_fork_features"
+* Tests are in [test_fork_features](https://github.com/the-old-dev/luna/tree/master/test_fork_features)
 
 ## Getting Started
 
